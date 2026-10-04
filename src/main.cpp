@@ -55,12 +55,10 @@ const uint8_t TRACK_KOMA           = 16;
 const uint8_t TRACK_PH_PREFIX      = 17;
 
 // ========================================
-// AUDIO PLAYBACK TIMING
+// AUDIO PLAYBACK CONFIGURATION
 // ========================================
-const uint16_t DELAY_PREFIX_MS   = 5000;  // After "pH terbaca adalah"
-const uint16_t DELAY_INTEGER_MS  = 3000;  // After integer part
-const uint16_t DELAY_KOMA_MS     = 2000;  // After "koma"
-const uint16_t DELAY_DECIMAL_MS  = 2000;  // After decimal digit
+// Timeout for waiting for DFPlayer playback-finished event (ms)
+const uint32_t PLAYBACK_TIMEOUT_MS = 30000;
 
 // ========================================
 // MAIN LOOP TIMING
@@ -142,14 +140,41 @@ float readPHSensor() {
 }
 
 // ========================================
+// PLAY AUDIO TRACK AND WAIT FOR COMPLETION
+// ========================================
+// Plays the specified track and waits for DFPlayerPlayFinished event.
+// Returns true on successful completion, false on timeout or error.
+bool playAndWait(uint8_t track) {
+  mp3.play(track);
+
+  uint32_t startTime = millis();
+  while (millis() - startTime < PLAYBACK_TIMEOUT_MS) {
+    if (mp3.available()) {
+      uint8_t type = mp3.readType();
+      int value = mp3.read();
+
+      if (type == DFPlayerPlayFinished) {
+        return true;  // Track finished playing
+      }
+      if (type == DFPlayerError) {
+        Serial.print(F("DFPlayer error: "));
+        Serial.println(value);
+        return false;  // Playback error
+      }
+    }
+    // Small yield to avoid tight loop
+    delay(10);
+  }
+
+  Serial.println(F("Playback timeout"));
+  return false;  // Timeout
+}
+
+// ========================================
 // ANNOUNCE PH VALUE VIA AUDIO
 // ========================================
 // Rounds pH to 1 decimal place, splits into integer and decimal parts,
-// and plays corresponding audio tracks with appropriate delays.
-// Indonesian pronunciation:
-//   0-9: nol, satu, dua, tiga, empat, lima, enam, tujuh, delapan, sembilan
-//   10: sepuluh, 11: sebelas, 12: dua belas, 13: tiga belas, 14: empat belas
-//   Decimal: "koma" + digit (only if decimal > 0)
+// and plays corresponding audio tracks using event-based synchronization.
 void announcePH(float pH) {
   // Round to 1 decimal place (e.g., 7.36 -> 7.4)
   pH = round(pH * 10.0) / 10.0;
@@ -167,8 +192,7 @@ void announcePH(float pH) {
   }
 
   // Play: "pH terbaca adalah"
-  mp3.play(TRACK_PH_PREFIX);
-  delay(DELAY_PREFIX_MS);
+  playAndWait(TRACK_PH_PREFIX);
 
   // Play integer part (0-14) with natural Indonesian pronunciation
   uint8_t integerTrack;
@@ -188,15 +212,13 @@ void announcePH(float pH) {
     case 12: integerTrack = TRACK_DUA_BELAS;     break;
     case 13: integerTrack = TRACK_TIGA_BELAS;    break;
     case 14: integerTrack = TRACK_EMPAT_BELAS;   break;
-    default: integerTrack = TRACK_NOL;           break;  // Fallback
+    default: integerTrack = TRACK_NOL;           break;
   }
-  mp3.play(integerTrack);
-  delay(DELAY_INTEGER_MS);
+  playAndWait(integerTrack);
 
   // Play decimal part if > 0: "koma" + digit
   if (decimalPart > 0) {
-    mp3.play(TRACK_KOMA);
-    delay(DELAY_KOMA_MS);
+    playAndWait(TRACK_KOMA);
 
     uint8_t decimalTrack;
     switch (decimalPart) {
@@ -212,8 +234,7 @@ void announcePH(float pH) {
       case 9: decimalTrack = TRACK_SEMBILAN; break;
       default: decimalTrack = TRACK_NOL;     break;
     }
-    mp3.play(decimalTrack);
-    delay(DELAY_DECIMAL_MS);
+    playAndWait(decimalTrack);
   }
 }
 
