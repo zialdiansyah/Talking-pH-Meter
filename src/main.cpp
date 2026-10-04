@@ -30,19 +30,36 @@ const float PH_MAX = 14.0;
 // DFPlayer AUDIO TRACK MAPPING
 // ========================================
 // Track assignments on microSD card:
-//   1  = "1"      2  = "2"      3  = "3"      4  = "4"      5  = "5"
-//   6  = "6"      7  = "7"      8  = "8"      9  = "9"      10 = "0"
-//   11 = "koma"   12 = "pH terbaca adalah"
-const uint8_t TRACK_DIGIT[10] = {10, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-const uint8_t TRACK_KOMAS      = 11;
-const uint8_t TRACK_PH_PREFIX  = 12;
+//   001 = nol              002 = satu            003 = dua
+//   004 = tiga             005 = empat           006 = lima
+//   007 = enam             008 = tujuh           009 = delapan
+//   010 = sembilan         011 = sepuluh         012 = sebelas
+//   013 = dua belas        014 = tiga belas      015 = empat belas
+//   016 = koma             017 = "pH terbaca adalah"
+const uint8_t TRACK_NOL            = 1;
+const uint8_t TRACK_SATU           = 2;
+const uint8_t TRACK_DUA            = 3;
+const uint8_t TRACK_TIGA           = 4;
+const uint8_t TRACK_EMPAT          = 5;
+const uint8_t TRACK_LIMA           = 6;
+const uint8_t TRACK_ENAM           = 7;
+const uint8_t TRACK_TUJUH          = 8;
+const uint8_t TRACK_DELAPAN        = 9;
+const uint8_t TRACK_SEMBILAN       = 10;
+const uint8_t TRACK_SEPULUH        = 11;
+const uint8_t TRACK_SEBELAS        = 12;
+const uint8_t TRACK_DUA_BELAS      = 13;
+const uint8_t TRACK_TIGA_BELAS     = 14;
+const uint8_t TRACK_EMPAT_BELAS    = 15;
+const uint8_t TRACK_KOMA           = 16;
+const uint8_t TRACK_PH_PREFIX      = 17;
 
 // ========================================
 // AUDIO PLAYBACK TIMING
 // ========================================
 const uint16_t DELAY_PREFIX_MS   = 5000;  // After "pH terbaca adalah"
-const uint16_t DELAY_INTEGER_MS  = 3000;  // After integer digit
-const uint16_t DELAY_KOMAS_MS    = 2000;  // After "koma"
+const uint16_t DELAY_INTEGER_MS  = 3000;  // After integer part
+const uint16_t DELAY_KOMA_MS     = 2000;  // After "koma"
 const uint16_t DELAY_DECIMAL_MS  = 2000;  // After decimal digit
 
 // ========================================
@@ -129,6 +146,10 @@ float readPHSensor() {
 // ========================================
 // Rounds pH to 1 decimal place, splits into integer and decimal parts,
 // and plays corresponding audio tracks with appropriate delays.
+// Indonesian pronunciation:
+//   0-9: nol, satu, dua, tiga, empat, lima, enam, tujuh, delapan, sembilan
+//   10: sepuluh, 11: sebelas, 12: dua belas, 13: tiga belas, 14: empat belas
+//   Decimal: "koma" + digit (only if decimal > 0)
 void announcePH(float pH) {
   // Round to 1 decimal place (e.g., 7.36 -> 7.4)
   pH = round(pH * 10.0) / 10.0;
@@ -149,17 +170,51 @@ void announcePH(float pH) {
   mp3.play(TRACK_PH_PREFIX);
   delay(DELAY_PREFIX_MS);
 
-  // Play integer digit (e.g., "7")
-  mp3.play(TRACK_DIGIT[integerPart]);
+  // Play integer part (0-14) with natural Indonesian pronunciation
+  uint8_t integerTrack;
+  switch (integerPart) {
+    case 0:  integerTrack = TRACK_NOL;           break;
+    case 1:  integerTrack = TRACK_SATU;          break;
+    case 2:  integerTrack = TRACK_DUA;           break;
+    case 3:  integerTrack = TRACK_TIGA;          break;
+    case 4:  integerTrack = TRACK_EMPAT;         break;
+    case 5:  integerTrack = TRACK_LIMA;          break;
+    case 6:  integerTrack = TRACK_ENAM;          break;
+    case 7:  integerTrack = TRACK_TUJUH;         break;
+    case 8:  integerTrack = TRACK_DELAPAN;       break;
+    case 9:  integerTrack = TRACK_SEMBILAN;      break;
+    case 10: integerTrack = TRACK_SEPULUH;       break;
+    case 11: integerTrack = TRACK_SEBELAS;       break;
+    case 12: integerTrack = TRACK_DUA_BELAS;     break;
+    case 13: integerTrack = TRACK_TIGA_BELAS;    break;
+    case 14: integerTrack = TRACK_EMPAT_BELAS;   break;
+    default: integerTrack = TRACK_NOL;           break;  // Fallback
+  }
+  mp3.play(integerTrack);
   delay(DELAY_INTEGER_MS);
 
-  // Play: "koma"
-  mp3.play(TRACK_KOMAS);
-  delay(DELAY_KOMAS_MS);
+  // Play decimal part if > 0: "koma" + digit
+  if (decimalPart > 0) {
+    mp3.play(TRACK_KOMA);
+    delay(DELAY_KOMA_MS);
 
-  // Play decimal digit (e.g., "4")
-  mp3.play(TRACK_DIGIT[decimalPart]);
-  delay(DELAY_DECIMAL_MS);
+    uint8_t decimalTrack;
+    switch (decimalPart) {
+      case 0: decimalTrack = TRACK_NOL;      break;
+      case 1: decimalTrack = TRACK_SATU;     break;
+      case 2: decimalTrack = TRACK_DUA;      break;
+      case 3: decimalTrack = TRACK_TIGA;     break;
+      case 4: decimalTrack = TRACK_EMPAT;    break;
+      case 5: decimalTrack = TRACK_LIMA;     break;
+      case 6: decimalTrack = TRACK_ENAM;     break;
+      case 7: decimalTrack = TRACK_TUJUH;    break;
+      case 8: decimalTrack = TRACK_DELAPAN;  break;
+      case 9: decimalTrack = TRACK_SEMBILAN; break;
+      default: decimalTrack = TRACK_NOL;     break;
+    }
+    mp3.play(decimalTrack);
+    delay(DELAY_DECIMAL_MS);
+  }
 }
 
 // ========================================
