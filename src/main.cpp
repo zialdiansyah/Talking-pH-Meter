@@ -216,26 +216,24 @@ void announcePH(float pH) {
   }
   playAndWait(integerTrack);
 
-  // Play decimal part if > 0: "koma" + digit
-  if (decimalPart > 0) {
-    playAndWait(TRACK_KOMA);
+  // Always play decimal part: "koma" + digit (including 0)
+  playAndWait(TRACK_KOMA);
 
-    uint8_t decimalTrack;
-    switch (decimalPart) {
-      case 0: decimalTrack = TRACK_NOL;      break;
-      case 1: decimalTrack = TRACK_SATU;     break;
-      case 2: decimalTrack = TRACK_DUA;      break;
-      case 3: decimalTrack = TRACK_TIGA;     break;
-      case 4: decimalTrack = TRACK_EMPAT;    break;
-      case 5: decimalTrack = TRACK_LIMA;     break;
-      case 6: decimalTrack = TRACK_ENAM;     break;
-      case 7: decimalTrack = TRACK_TUJUH;    break;
-      case 8: decimalTrack = TRACK_DELAPAN;  break;
-      case 9: decimalTrack = TRACK_SEMBILAN; break;
-      default: decimalTrack = TRACK_NOL;     break;
-    }
-    playAndWait(decimalTrack);
+  uint8_t decimalTrack;
+  switch (decimalPart) {
+    case 0: decimalTrack = TRACK_NOL;      break;
+    case 1: decimalTrack = TRACK_SATU;     break;
+    case 2: decimalTrack = TRACK_DUA;      break;
+    case 3: decimalTrack = TRACK_TIGA;     break;
+    case 4: decimalTrack = TRACK_EMPAT;    break;
+    case 5: decimalTrack = TRACK_LIMA;     break;
+    case 6: decimalTrack = TRACK_ENAM;     break;
+    case 7: decimalTrack = TRACK_TUJUH;    break;
+    case 8: decimalTrack = TRACK_DELAPAN;  break;
+    case 9: decimalTrack = TRACK_SEMBILAN; break;
+    default: decimalTrack = TRACK_NOL;     break;
   }
+  playAndWait(decimalTrack);
 }
 
 // ========================================
