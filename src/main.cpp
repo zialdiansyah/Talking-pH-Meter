@@ -21,8 +21,8 @@ const float    ADC_TO_VOLTAGE    = 5.0 / 1023.0;  // 10-bit ADC, 5V reference
 // ========================================
 // Linear calibration: pH = SLOPE * voltage + INTERCEPT
 // Derived from calibration measurements with buffer solutions.
-const float PH_CALIBRATION_SLOPE     = -35.458;
-const float PH_CALIBRATION_INTERCEPT = 171.26;
+const float PH_CALIBRATION_SLOPE     = -6.4567;
+const float PH_CALIBRATION_INTERCEPT = 32.223;
 const float PH_MIN = 0.0;
 const float PH_MAX = 14.0;
 
@@ -36,23 +36,23 @@ const float PH_MAX = 14.0;
 //   010 = sembilan         011 = sepuluh         012 = sebelas
 //   013 = dua belas        014 = tiga belas      015 = empat belas
 //   016 = koma             017 = "pH terbaca adalah"
-const uint8_t TRACK_NOL            = 1;
-const uint8_t TRACK_SATU           = 2;
+const uint8_t TRACK_NOL            = 33;
+const uint8_t TRACK_SATU           = 1;
 const uint8_t TRACK_DUA            = 3;
-const uint8_t TRACK_TIGA           = 4;
-const uint8_t TRACK_EMPAT          = 5;
-const uint8_t TRACK_LIMA           = 6;
-const uint8_t TRACK_ENAM           = 7;
-const uint8_t TRACK_TUJUH          = 8;
-const uint8_t TRACK_DELAPAN        = 9;
-const uint8_t TRACK_SEMBILAN       = 10;
-const uint8_t TRACK_SEPULUH        = 11;
-const uint8_t TRACK_SEBELAS        = 12;
-const uint8_t TRACK_DUA_BELAS      = 13;
-const uint8_t TRACK_TIGA_BELAS     = 14;
-const uint8_t TRACK_EMPAT_BELAS    = 15;
-const uint8_t TRACK_KOMA           = 16;
-const uint8_t TRACK_PH_PREFIX      = 17;
+const uint8_t TRACK_TIGA           = 5;
+const uint8_t TRACK_EMPAT          = 7;
+const uint8_t TRACK_LIMA           = 9;
+const uint8_t TRACK_ENAM           = 11;
+const uint8_t TRACK_TUJUH          = 13;
+const uint8_t TRACK_DELAPAN        = 15;
+const uint8_t TRACK_SEMBILAN       = 17;
+const uint8_t TRACK_SEPULUH        = 19;
+const uint8_t TRACK_SEBELAS        = 21;
+const uint8_t TRACK_DUA_BELAS      = 23;
+const uint8_t TRACK_TIGA_BELAS     = 25;
+const uint8_t TRACK_EMPAT_BELAS    = 27;
+const uint8_t TRACK_KOMA           = 29;
+const uint8_t TRACK_PH_PREFIX      = 31;
 
 // ========================================
 // AUDIO PLAYBACK CONFIGURATION
@@ -91,7 +91,7 @@ void setup() {
   Serial.println(F("DFPlayer berhasil terdeteksi."));
 
   // Volume range: 0 (mute) to 30 (max)
-  mp3.volume(25);
+  mp3.volume(26);
 
   delay(1000);
   Serial.println(F("Sistem siap."));
